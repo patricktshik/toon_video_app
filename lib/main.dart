@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
-// Remplace par l'adresse de TON serveur (voir Étape 3).
-const String kBackendUrl = 'https://ton-serveur.example.com';
+const String kBackendUrl = 'https://toon-server.onrender.com';
 
 void main() => runApp(const ToonApp());
 
@@ -17,8 +16,11 @@ class ToonApp extends StatelessWidget {
     return MaterialApp(
       title: 'Toon Video',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
         colorSchemeSeed: Colors.deepPurple,
+        scaffoldBackgroundColor: const Color(0xFF0E0E12),
         useMaterial3: true,
       ),
       home: const IdeaScreen(),
@@ -50,7 +52,6 @@ class _IdeaScreenState extends State<IdeaScreen> {
     });
 
     try {
-      // 1. Lancer la génération
       final start = await http.post(
         Uri.parse('$kBackendUrl/generate'),
         headers: {'Content-Type': 'application/json'},
@@ -61,7 +62,6 @@ class _IdeaScreenState extends State<IdeaScreen> {
       }
       final jobId = jsonDecode(start.body)['jobId'] as String;
 
-      // 2. Attendre le résultat (toutes les 4 secondes)
       String? videoUrl;
       for (int i = 0; i < 60; i++) {
         await Future.delayed(const Duration(seconds: 4));
@@ -72,7 +72,7 @@ class _IdeaScreenState extends State<IdeaScreen> {
           break;
         }
         if (data['status'] == 'failed') {
-          throw Exception('La génération a échoué.');
+          throw Exception(data['error'] ?? 'La génération a échoué.');
         }
       }
       if (videoUrl == null) throw Exception('Trop long, réessaie.');
@@ -92,7 +92,10 @@ class _IdeaScreenState extends State<IdeaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Toon Video')),
+      appBar: AppBar(
+        title: const Text('Toon Video'),
+        backgroundColor: const Color(0xFF0E0E12),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -115,7 +118,10 @@ class _IdeaScreenState extends State<IdeaScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
               ),
             FilledButton.icon(
               onPressed: _loading ? null : _generate,
@@ -126,7 +132,9 @@ class _IdeaScreenState extends State<IdeaScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.movie_creation),
-              label: Text(_loading ? 'Génération en cours...' : 'Générer la vidéo'),
+              label: Text(
+                _loading ? 'Génération en cours...' : 'Générer la vidéo',
+              ),
             ),
           ],
         ),
@@ -166,7 +174,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ta vidéo')),
+      appBar: AppBar(
+        title: const Text('Ta vidéo'),
+        backgroundColor: const Color(0xFF0E0E12),
+      ),
       body: Center(
         child: _vc.value.isInitialized
             ? AspectRatio(
